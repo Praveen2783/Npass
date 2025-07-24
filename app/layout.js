@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "react-hot-toast";
 // import { metadata1 } from "./contact/page";
-import { siteConfig, generateMetadata as genMeta } from "@/util/metadata.js"
+import {  generateMetadata as genMeta } from "@/util/metadata.js"
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -39,7 +39,7 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#000000" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content={siteConfig.name} />
+        {/* <meta name="apple-mobile-web-app-title" content={siteConfig.name} /> */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#000000" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
