@@ -9,12 +9,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { PasswordStrengthIndicator } from "./password-strength-indicator"
 // import { Dialog, DialogContent, DialogTitle, DialogTrigger, } from "@radix-ui/react-dialog"
 import { DialogHeader,Dialog, DialogContent, DialogTitle, DialogTrigger, } from "./ui/dialog"
+import { deletePassword } from "@/actions/actions"
+import { useRouter } from "next/navigation"
 
 
 
-export function YourPasswords({passwordsData}) {
+export function YourPasswords({passwordsData,userdata}) {
   const [visiblePasswords, setVisiblePasswords] = useState(new Set())
-
+  const router = useRouter();
   const togglePasswordVisibility = (passwordId) => {
     const newVisible = new Set(visiblePasswords)
     if (newVisible.has(passwordId)) {
@@ -41,6 +43,12 @@ export function YourPasswords({passwordsData}) {
         return "secondary"
     }
   }
+
+  
+    const handleDelete =async (passId)=>{
+     await deletePassword(userdata,passId)
+      router.refresh();  
+    }
 
   if (passwordsData.length === 0) {
     return (
@@ -132,8 +140,12 @@ export function YourPasswords({passwordsData}) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                    {/* <DropdownMenuItem>Edit</DropdownMenuItem> */}
+                    <DropdownMenuItem className="text-destructive" 
+                    onClick={()=>{
+                      handleDelete(password.id)
+                    }}
+                    >Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

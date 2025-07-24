@@ -6,31 +6,20 @@ import { Badge } from "@/components/ui/badge"
 import { CreditCard, Eye, EyeOff, MoreVertical, Copy } from "lucide-react"
 import { useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { deleteCreditCard, editCreditCard } from "@/actions/actions.js"
+import { useRouter } from "next/navigation"
+// import { currentUser } from "@clerk/nextjs/server"4
+// import { UpdateCard } from "./UpdateCard"
+import toast from "react-hot-toast"
+import id from "zod/v4/locales/id.cjs"
 
-const mockCards = [
-  {
-    id: "1",
-    name: "Personal Visa",
-    lastFour: "4532",
-    type: "Visa",
-    expiryMonth: "12",
-    expiryYear: "25",
-    cardholder: "John Doe",
-  },
-  {
-    id: "2",
-    name: "Business Mastercard",
-    lastFour: "8901",
-    type: "Mastercard",
-    expiryMonth: "08",
-    expiryYear: "26",
-    cardholder: "John Doe",
-  },
-]
 
-export function YourCards({cardsData}) {
+
+export function YourCards({ cardsData, userdata }) {
   const [visibleCards, setVisibleCards] = useState(new Set())
-
+  const [updateCard, setUpdateCard] = useState(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const router = useRouter();
   const toggleCardVisibility = (cardId) => {
     const newVisible = new Set(visibleCards)
     if (newVisible.has(cardId)) {
@@ -81,13 +70,24 @@ export function YourCards({cardsData}) {
     }
   }
 
-    const formatCardNumber = (value) => {
+  const formatCardNumber = (value) => {
     // Remove all non-digits
     const digits = value.replace(/\D/g, "")
     // Add spaces every 4 digits
     const formatted = digits.replace(/(\d{4})(?=\d)/g, "$1 ")
     return formatted.slice(0, 19) // Limit to 16 digits + 3 spaces
   }
+
+
+  const handleDelete = async (cardId) => {
+     
+   await deleteCreditCard(userdata, cardId)
+    router.refresh();
+  }
+
+
+
+
 
 
   if (cardsData.length === 0) {
@@ -105,66 +105,75 @@ export function YourCards({cardsData}) {
 
 
   return (
-    <div className="space-y-4">
-      {cardsData.map((card,i) => (
-        <Card key={i} className="w-full">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <CreditCard className="h-5 w-5" />
-                {card.cardName}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{card.cardType}</Badge>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+    <>
+      <div className="space-y-4">
+        {cardsData.map((card, i) => (
+          <Card key={i} className="w-full">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <CreditCard className="h-5 w-5" />
+                  {card.cardName}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{card.cardType}</Badge>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {/* <DropdownMenuItem onClick={
+                        () => handleUpdate(card)
+                      }>Edit</DropdownMenuItem> */}
+                      <DropdownMenuItem className="text-destructive" onClick={()=>{
+                        handleDelete(card.id)
+                      }}>Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Card Number</span>
-              <div className="flex items-center gap-2">
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Card Number</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono">
+                    {visibleCards.has(i) ? ` ${formatCardNumber(card.cardNo)}` : "•••• •••• •••• ••••"}
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={() => toggleCardVisibility(i)}>
+                    {visibleCards.has(i) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(`${card.cardNo}`)}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Expires</span>
                 <span className="font-mono">
-                  {visibleCards.has(i) ? ` ${formatCardNumber(card.cardNo)}` : "•••• •••• •••• ••••"}
+                  {card.expiry}
                 </span>
-                <Button variant="ghost" size="sm" onClick={() => toggleCardVisibility(i)}>
-                  {visibleCards.has(i) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => copyToClipboard(`${card.cardNo}`)}>
-                  <Copy className="h-4 w-4" />
-                </Button>
               </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Expires</span>
-              <span className="font-mono">
-                {card.expiry}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Cardholder</span>
-              <span>{card.cardHolderName}</span>
-            </div>
-             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Last Updated</span>
-              <span className="text-sm">{formatLastUpdated(card.date)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Cardholder</span>
+                <span>{card.cardHolderName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Last Updated</span>
+                <span className="text-sm">{formatLastUpdated(card.date)}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+    
+
+    </>
   );
 }

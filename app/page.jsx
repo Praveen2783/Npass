@@ -52,12 +52,12 @@ export default async function Home() {
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Your Cards</h2>
           
-              <YourCards cardsData={cards?cards:[]} />
+              <YourCards userdata={user.id}  cardsData={cards?cards:[]} />
              
           </div>
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Your Passwords</h2>
-            <YourPasswords passwordsData ={passwords?passwords:[]} />
+            <YourPasswords userdata={user.id} passwordsData ={passwords?passwords:[]} />
           </div>
         </div>
       </div>
